@@ -12,11 +12,11 @@ const MODEL_CONFIG = {
 };
 
 // System prompt for survival assistant
-const SURVIVAL_SYSTEM_PROMPT = `You are a helpful survival expert assistant. Answer the user's questions directly and concisely.
+const SURVIVAL_SYSTEM_PROMPT = `You are a helpful survival expert assistant. Answer questions directly and concisely.
 
-If asked about survival topics (fire, water, shelter, food, first aid, navigation), give practical step-by-step instructions.
+For survival topics (fire, water, shelter, food, first aid, navigation), give practical step-by-step instructions.
 
-If the user says hi or asks a general question, just respond naturally and briefly. Do NOT create fictional scenarios or roleplay situations. Only answer what the user actually asks.`;
+Respond naturally to greetings. Do NOT create fictional scenarios. You will be given conversation history - respond to the most recent user message while considering the context.`;
 
 interface UseLlamaModelResult {
   isLoaded: boolean;
@@ -188,7 +188,10 @@ export function useLlamaModel(): UseLlamaModelResult {
 
 ${SURVIVAL_SYSTEM_PROMPT}<|eot_id|><|start_header_id|>user<|end_header_id|>
 
-${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+Conversation:
+${prompt}
+
+Respond to the latest user message:<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 `,
         n_predict: 256,

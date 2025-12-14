@@ -56,27 +56,40 @@ export default function ChatScreen() {
   }, []);
 
   const sendMessage = async () => {
-    if (!input.trim() || isGenerating) return;
+    const userInput = input.trim();
+    if (!userInput || isGenerating) return;
     mediumTap();
+
+    // Clear input immediately
+    setInput('');
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim(),
+      content: userInput,
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
 
     // Scroll to bottom
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
 
-    // Generate response
-    const response = await generateResponse(input.trim());
-    
+    // Build conversation history for context (last 6 messages max)
+    const recentMessages = updatedMessages
+      .filter(m => m.role !== 'system')
+      .slice(-6);
+
+    const conversationContext = recentMessages
+      .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .join('\n\n');
+
+    // Generate response with context
+    const response = await generateResponse(conversationContext);
+
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
       role: 'assistant',
@@ -85,7 +98,7 @@ export default function ChatScreen() {
     };
 
     setMessages(prev => [...prev, assistantMessage]);
-    
+
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
