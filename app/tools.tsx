@@ -7,68 +7,77 @@ import {
   StyleSheet,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MorseCodeService } from '../src/services/morseCode';
 import { useTheme } from '../src/context/ThemeContext';
-
-// Note: In a real build, you'd import from react-native-torch
-// import Torch from 'react-native-torch';
+import { useHaptics } from '../src/context/HapticsContext';
+import Torch from 'react-native-torch';
 
 export default function ToolsScreen() {
   const { isDark } = useTheme();
+  const { lightTap, mediumTap, heavyTap } = useHaptics();
   const styles = createStyles(isDark);
-  
+
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [isSendingMorse, setIsSendingMorse] = useState(false);
+  const [activeSignal, setActiveSignal] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState('');
+  const [loopEnabled, setLoopEnabled] = useState(false);
   const morseServiceRef = useRef(new MorseCodeService());
+  const loopingRef = useRef(false);
 
   const toggleFlashlight = async () => {
+    heavyTap();
     try {
-      // In real implementation:
-      // await Torch.switchState(!flashlightOn);
-      setFlashlightOn(!flashlightOn);
-      
-      // Placeholder alert for demo
-      Alert.alert(
-        flashlightOn ? 'Flashlight Off' : 'Flashlight On',
-        'In production build, this will control the device flashlight via react-native-torch'
-      );
+      const newState = !flashlightOn;
+      await Torch.switchState(newState);
+      setFlashlightOn(newState);
     } catch (error) {
       Alert.alert('Error', 'Could not control flashlight. Make sure camera permissions are granted.');
     }
   };
 
   const sendMorseSignal = async (message: string, label: string) => {
+    mediumTap();
     if (isSendingMorse) {
+      loopingRef.current = false;
       morseServiceRef.current.stop();
+      await Torch.switchState(false);
       setIsSendingMorse(false);
+      setActiveSignal(null);
       return;
     }
 
     setIsSendingMorse(true);
+    setActiveSignal(label);
+    loopingRef.current = loopEnabled;
+
     try {
-      await morseServiceRef.current.flashMorse(message, (isOn) => {
-        // In real implementation, toggle torch here
-        // Torch.switchState(isOn);
-        console.log(`Flashlight: ${isOn ? 'ON' : 'OFF'}`);
-      });
-      Alert.alert('Complete', `Finished sending "${label}" in Morse code`);
+      do {
+        await morseServiceRef.current.flashMorse(message, (isOn) => {
+          Torch.switchState(isOn);
+        });
+
+        if (loopingRef.current) {
+          // 4 second pause between loops
+          await new Promise(resolve => setTimeout(resolve, 4000));
+        }
+      } while (loopingRef.current);
     } catch (error) {
       console.error('Morse error:', error);
+      await Torch.switchState(false);
     } finally {
+      await Torch.switchState(false);
       setIsSendingMorse(false);
+      setActiveSignal(null);
     }
   };
 
   const emergencySignals = [
-    { label: 'SOS', message: 'SOS', description: '··· ─── ···', priority: 'high' },
-    { label: 'HELP', message: 'HELP', description: '···· · ·─·· ──·─', priority: 'high' },
-    { label: 'RESCUE', message: 'RESCUE', description: '·─· · ··· ─·─· ··─ ·', priority: 'medium' },
-    { label: 'WATER', message: 'WATER', description: '·── ·─ ─ · ·─·', priority: 'medium' },
-    { label: 'FOOD', message: 'FOOD', description: '··─· ─── ─── ─··', priority: 'medium' },
-    { label: 'MEDICAL', message: 'MEDICAL', description: '── · ─·· ·· ─·─· ·─ ·─··', priority: 'high' },
+    { label: 'SOS', message: 'SOS', description: '· · ·   ─ ─ ─   · · ·' },
+    { label: 'HELP', message: 'HELP', description: '· · · ·   ·   · ─ · ·   ─ ─ · ─' },
   ];
 
   return (
@@ -99,58 +108,111 @@ export default function ToolsScreen() {
           Tap to flash signal • Tap again to stop
         </Text>
 
+        <TouchableOpacity
+          style={styles.loopToggle}
+          onPress={() => { lightTap(); setLoopEnabled(!loopEnabled); }}
+          activeOpacity={0.7}
+        >
+          <View style={styles.loopToggleLeft}>
+            <Ionicons
+              name="repeat"
+              size={20}
+              color={loopEnabled ? '#e94560' : (isDark ? '#8a8aaa' : '#666')}
+            />
+            <Text style={[styles.loopToggleText, loopEnabled && styles.loopToggleTextActive]}>
+              Loop continuously
+            </Text>
+          </View>
+          <View style={[styles.loopIndicator, loopEnabled && styles.loopIndicatorActive]}>
+            <Text style={[styles.loopIndicatorText, loopEnabled && styles.loopIndicatorTextActive]}>
+              {loopEnabled ? 'ON' : 'OFF'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         <View style={styles.signalGrid}>
-          {emergencySignals.map((signal) => (
-            <TouchableOpacity
-              key={signal.label}
-              style={[
-                styles.signalButton,
-                signal.priority === 'high' && styles.signalButtonHigh,
-                isSendingMorse && styles.signalButtonDisabled,
-              ]}
-              onPress={() => sendMorseSignal(signal.message, signal.label)}
-              disabled={isSendingMorse}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.signalLabel}>{signal.label}</Text>
-              <Text style={styles.signalMorse}>{signal.description}</Text>
-            </TouchableOpacity>
-          ))}
+          {emergencySignals.map((signal) => {
+            const isActive = activeSignal === signal.label;
+            return (
+              <TouchableOpacity
+                key={signal.label}
+                style={[
+                  styles.signalButton,
+                  isActive && styles.signalButtonActive,
+                  isSendingMorse && !isActive && styles.signalButtonDisabled,
+                ]}
+                onPress={() => sendMorseSignal(signal.message, signal.label)}
+                disabled={isSendingMorse && !isActive}
+                activeOpacity={0.7}
+              >
+                {isActive && (
+                  <View style={styles.activeIndicator}>
+                    <Text style={styles.activeIndicatorText}>FLASHING: {signal.label}</Text>
+                  </View>
+                )}
+                <Text style={[styles.signalLabel, isActive && styles.signalLabelActive]}>
+                  {isActive ? 'TAP TO STOP' : signal.label}
+                </Text>
+                <Text style={[styles.signalMorse, isActive && styles.signalMorseActive]}>
+                  {signal.description}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
       {/* Custom Morse Message */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Custom Message</Text>
-        <View style={styles.customInputContainer}>
-          <TextInput
-            style={styles.customInput}
-            value={customMessage}
-            onChangeText={setCustomMessage}
-            placeholder="Enter message..."
-            placeholderTextColor={isDark ? '#6a6a8a' : '#999'}
-            maxLength={20}
-            autoCapitalize="characters"
-          />
+        {activeSignal === customMessage && customMessage ? (
           <TouchableOpacity
-            style={[
-              styles.sendCustomButton,
-              (!customMessage.trim() || isSendingMorse) && styles.sendCustomButtonDisabled,
-            ]}
+            style={styles.customActiveButton}
             onPress={() => sendMorseSignal(customMessage, customMessage)}
-            disabled={!customMessage.trim() || isSendingMorse}
+            activeOpacity={0.7}
           >
-            <Ionicons
-              name="send"
-              size={20}
-              color={(!customMessage.trim() || isSendingMorse) ? '#6a6a8a' : '#ffffff'}
-            />
+            <View style={styles.activeIndicator}>
+              <Text style={styles.activeIndicatorText}>FLASHING: {customMessage.toUpperCase()}</Text>
+            </View>
+            <Text style={styles.customActiveLabel}>TAP TO STOP</Text>
+            <Text style={styles.customActiveMorse}>
+              {MorseCodeService.toMorseDisplay(customMessage)}
+            </Text>
           </TouchableOpacity>
-        </View>
-        {customMessage && (
-          <Text style={styles.morsePreview}>
-            {MorseCodeService.toMorseDisplay(customMessage)}
-          </Text>
+        ) : (
+          <>
+            <View style={styles.customInputContainer}>
+              <TextInput
+                style={styles.customInput}
+                value={customMessage}
+                onChangeText={setCustomMessage}
+                placeholder="Enter message..."
+                placeholderTextColor={isDark ? '#6a6a8a' : '#999'}
+                maxLength={20}
+                autoCapitalize="characters"
+                editable={!isSendingMorse}
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendCustomButton,
+                  (!customMessage.trim() || isSendingMorse) && styles.sendCustomButtonDisabled,
+                ]}
+                onPress={() => sendMorseSignal(customMessage, customMessage)}
+                disabled={!customMessage.trim() || isSendingMorse}
+              >
+                <Ionicons
+                  name="send"
+                  size={20}
+                  color={(!customMessage.trim() || isSendingMorse) ? '#6a6a8a' : '#ffffff'}
+                />
+              </TouchableOpacity>
+            </View>
+            {customMessage && (
+              <Text style={styles.morsePreview}>
+                {MorseCodeService.toMorseDisplay(customMessage)}
+              </Text>
+            )}
+          </>
         )}
       </View>
 
@@ -203,6 +265,44 @@ const createStyles = (isDark: boolean) =>
       color: isDark ? '#8a8aaa' : '#666',
       marginBottom: 16,
     },
+    loopToggle: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: isDark ? '#16213e' : '#ffffff',
+      padding: 12,
+      borderRadius: 10,
+      marginBottom: 16,
+    },
+    loopToggleLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    loopToggleText: {
+      fontSize: 15,
+      color: isDark ? '#8a8aaa' : '#666',
+      marginLeft: 10,
+    },
+    loopToggleTextActive: {
+      color: isDark ? '#eaeaea' : '#1a1a2e',
+    },
+    loopIndicator: {
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+      backgroundColor: isDark ? '#2a2a4e' : '#e0e0e0',
+    },
+    loopIndicatorActive: {
+      backgroundColor: '#e94560',
+    },
+    loopIndicatorText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: isDark ? '#6a6a8a' : '#999',
+    },
+    loopIndicatorTextActive: {
+      color: '#ffffff',
+    },
     flashlightButton: {
       alignItems: 'center',
       justifyContent: 'center',
@@ -243,13 +343,26 @@ const createStyles = (isDark: boolean) =>
       marginBottom: 12,
       alignItems: 'center',
       borderWidth: 2,
-      borderColor: 'transparent',
+      borderColor: '#e94560',
     },
-    signalButtonHigh: {
+    signalButtonActive: {
+      backgroundColor: '#e94560',
       borderColor: '#e94560',
     },
     signalButtonDisabled: {
       opacity: 0.5,
+    },
+    activeIndicator: {
+      backgroundColor: '#ffffff',
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 4,
+      marginBottom: 8,
+    },
+    activeIndicatorText: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: '#e94560',
     },
     signalLabel: {
       fontSize: 18,
@@ -257,10 +370,36 @@ const createStyles = (isDark: boolean) =>
       color: isDark ? '#eaeaea' : '#1a1a2e',
       marginBottom: 4,
     },
+    signalLabelActive: {
+      color: '#ffffff',
+    },
     signalMorse: {
       fontSize: 12,
       color: isDark ? '#8a8aaa' : '#666',
       fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    },
+    signalMorseActive: {
+      color: 'rgba(255,255,255,0.8)',
+    },
+    customActiveButton: {
+      backgroundColor: '#e94560',
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: '#e94560',
+    },
+    customActiveLabel: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#ffffff',
+      marginBottom: 4,
+    },
+    customActiveMorse: {
+      fontSize: 12,
+      color: 'rgba(255,255,255,0.8)',
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+      textAlign: 'center',
     },
     customInputContainer: {
       flexDirection: 'row',
@@ -329,6 +468,3 @@ const createStyles = (isDark: boolean) =>
       lineHeight: 18,
     },
   });
-
-// Add Platform import at the top
-import { Platform } from 'react-native';

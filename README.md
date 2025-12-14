@@ -183,6 +183,55 @@ npx expo build:ios
 eas build --platform ios
 ```
 
+## Future Roadmap: Native Swift Rebuild
+
+This React Native/Expo version is a **proof of concept** to validate market interest. If traction is achieved, the plan is to rebuild natively in Swift for the following reasons:
+
+### Why Swift?
+
+1. **Performance**: Native Swift provides better performance for on-device LLM inference. llama.cpp has excellent Swift bindings with lower overhead than the React Native bridge.
+
+2. **BitChat Integration**: [BitChat](https://github.com/permissionlesstech/bitchat) by Jack Dorsey provides offline peer-to-peer mesh networking via Bluetooth Low Energy. This would enable users to communicate with nearby survivors without internet. BitChat is written in Swift (99.3% of codebase) and is public domain (Unlicense).
+
+3. **BLE Mesh Networking**: Direct access to CoreBluetooth APIs for implementing mesh networking features:
+   - Automatic peer discovery
+   - Multi-hop message relay (up to 7 hops)
+   - No internet required
+   - Emergency broadcast to nearby devices
+
+4. **Smaller App Size**: No React Native/Expo runtime overhead.
+
+5. **Better iOS Integration**: Native access to all iOS features, better battery optimization, smoother animations.
+
+### BitChat Features to Integrate
+
+- `#mesh` channel for local Bluetooth network (offline-capable)
+- Location-based channels using geohash coordinates
+- Noise Protocol encryption for mesh communications
+- LZ4 message compression
+- Emergency data wipe via triple-tap
+
+### Swift Tech Stack (Planned)
+
+- **UI**: SwiftUI
+- **LLM**: llama.cpp with Swift bindings
+- **Mesh Networking**: BitChat's BLE implementation
+- **Storage**: SwiftData or Core Data
+- **Architecture**: MVVM with Combine
+
+---
+
+## Monetization
+
+This app is free and monetized through Amazon affiliate links:
+
+1. **Prepare Tab**: Curated survival gear categories (solar panels, water storage, go-bags, etc.)
+2. **Contextual Links**: Recommended products within each survival guide topic
+
+No subscription required. No backend costs. No API fees. The LLM runs entirely on-device.
+
+---
+
 ## License
 
 MIT License - See LICENSE file for details.

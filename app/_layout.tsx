@@ -5,14 +5,21 @@ import { StatusBar } from 'expo-status-bar';
 import { TouchableOpacity } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { HapticsProvider, useHaptics } from '../src/context/HapticsContext';
 
 SplashScreen.preventAutoHideAsync();
 
 function ThemeToggleButton() {
   const { isDark, toggleTheme } = useTheme();
+  const { lightTap } = useHaptics();
+
+  const handlePress = () => {
+    lightTap();
+    toggleTheme();
+  };
 
   return (
-    <TouchableOpacity onPress={toggleTheme} style={{ marginRight: 16 }}>
+    <TouchableOpacity onPress={handlePress} style={{ marginRight: 16 }}>
       <Ionicons
         name={isDark ? 'sunny-outline' : 'moon-outline'}
         size={24}
@@ -86,6 +93,15 @@ function TabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="prepare"
+          options={{
+            title: 'Prepare',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="briefcase-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="settings"
           options={{
             title: 'Settings',
@@ -102,7 +118,9 @@ function TabsLayout() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <TabsLayout />
+      <HapticsProvider>
+        <TabsLayout />
+      </HapticsProvider>
     </ThemeProvider>
   );
 }

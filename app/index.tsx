@@ -9,20 +9,24 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { survivalCategories, SurvivalCategory, SurvivalTopic } from '../src/data/survivalContent';
 import { useTheme } from '../src/context/ThemeContext';
+import { useHaptics } from '../src/context/HapticsContext';
 
 export default function HomeScreen() {
   const { isDark } = useTheme();
+  const { lightTap } = useHaptics();
   const styles = createStyles(isDark);
-  
+
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<SurvivalTopic | null>(null);
 
   const toggleCategory = (categoryId: string) => {
+    lightTap();
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
     setSelectedTopic(null);
   };
 
   const selectTopic = (topic: SurvivalTopic) => {
+    lightTap();
     setSelectedTopic(selectedTopic?.id === topic.id ? null : topic);
   };
 

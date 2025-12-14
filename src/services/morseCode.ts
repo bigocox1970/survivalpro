@@ -75,10 +75,14 @@ export class MorseCodeService {
       .map((char) => {
         const morse = MORSE_CODE[char];
         if (!morse) return '';
-        if (morse === ' ') return '   ';
-        return morse.replace(/\./g, '·').replace(/-/g, '─');
+        if (morse === ' ') return '     ';
+        // Add space between each dot/dash for readability
+        return morse
+          .split('')
+          .map(s => s === '.' ? '·' : '─')
+          .join(' ');
       })
-      .join('  ');
+      .join('   ');
   }
 
   /**
@@ -88,7 +92,10 @@ export class MorseCodeService {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
     return letters.map((letter) => ({
       letter,
-      morse: MORSE_CODE[letter].replace(/\./g, '·').replace(/-/g, '─'),
+      morse: MORSE_CODE[letter]
+        .split('')
+        .map(s => s === '.' ? '·' : '─')
+        .join(' '),
     }));
   }
 

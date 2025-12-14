@@ -11,15 +11,16 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/context/ThemeContext';
+import { useHaptics } from '../src/context/HapticsContext';
 
 export default function SettingsScreen() {
   const { isDark } = useTheme();
+  const { hapticsEnabled, setHapticsEnabled, lightTap } = useHaptics();
   const styles = createStyles(isDark);
 
   // Mock state - in production, these would come from AsyncStorage/RevenueCat
   const [isSubscribed, setIsSubscribed] = useState(true);
   const [modelDownloaded, setModelDownloaded] = useState(true);
-  const [hapticFeedback, setHapticFeedback] = useState(true);
   const [autoLoadModel, setAutoLoadModel] = useState(true);
 
   const handleSubscribe = () => {
@@ -123,8 +124,11 @@ export default function SettingsScreen() {
           icon: 'phone-portrait',
           label: 'Haptic Feedback',
           toggle: true,
-          value: hapticFeedback,
-          onToggle: setHapticFeedback,
+          value: hapticsEnabled,
+          onToggle: (value: boolean) => {
+            lightTap();
+            setHapticsEnabled(value);
+          },
         },
       ],
     },

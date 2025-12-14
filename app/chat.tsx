@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLlamaModel } from '../src/hooks/useLlamaModel';
 import { useTheme } from '../src/context/ThemeContext';
+import { useHaptics } from '../src/context/HapticsContext';
 
 interface Message {
   id: string;
@@ -23,6 +24,7 @@ interface Message {
 
 export default function ChatScreen() {
   const { isDark } = useTheme();
+  const { lightTap, mediumTap } = useHaptics();
   const styles = createStyles(isDark);
   
   const scrollViewRef = useRef<ScrollView>(null);
@@ -55,6 +57,7 @@ export default function ChatScreen() {
 
   const sendMessage = async () => {
     if (!input.trim() || isGenerating) return;
+    mediumTap();
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -157,7 +160,7 @@ export default function ChatScreen() {
               <TouchableOpacity
                 key={index}
                 style={styles.suggestionChip}
-                onPress={() => setInput(question)}
+                onPress={() => { lightTap(); setInput(question); }}
               >
                 <Text style={styles.suggestionText}>{question}</Text>
               </TouchableOpacity>
