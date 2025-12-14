@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLlamaModel } from '../src/hooks/useLlamaModel';
+import { useLlama } from '../src/context/LlamaContext';
 import { useTheme } from '../src/context/ThemeContext';
 import { useHaptics } from '../src/context/HapticsContext';
 
@@ -38,15 +38,15 @@ export default function ChatScreen() {
     },
   ]);
 
-  const { 
-    isLoaded, 
-    isLoading, 
-    isGenerating, 
-    loadModel, 
+  const {
+    isLoaded,
+    isLoading,
+    isGenerating,
+    loadModel,
     generateResponse,
     modelStatus,
     downloadProgress,
-  } = useLlamaModel();
+  } = useLlama();
 
   useEffect(() => {
     // Auto-load model on mount

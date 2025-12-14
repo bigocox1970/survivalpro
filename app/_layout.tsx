@@ -6,6 +6,7 @@ import { TouchableOpacity, View, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { HapticsProvider, useHaptics } from '../src/context/HapticsContext';
+import { LlamaProvider } from '../src/context/LlamaContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -136,7 +137,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <HapticsProvider>
-        <TabsLayout />
+        <LlamaProvider>
+          <TabsLayout />
+        </LlamaProvider>
       </HapticsProvider>
     </ThemeProvider>
   );

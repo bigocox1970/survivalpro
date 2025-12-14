@@ -12,12 +12,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/context/ThemeContext';
 import { useHaptics } from '../src/context/HapticsContext';
-import { useLlamaModel } from '../src/hooks/useLlamaModel';
+import { useLlama } from '../src/context/LlamaContext';
 
 export default function SettingsScreen() {
   const { isDark } = useTheme();
   const { hapticsEnabled, setHapticsEnabled, lightTap } = useHaptics();
-  const { isLoaded, isLoading, modelStatus, deleteModel, loadModel } = useLlamaModel();
+  const { isLoaded, isLoading, modelStatus, deleteModel, loadModel } = useLlama();
   const styles = createStyles(isDark);
 
   const handleResetModel = () => {
