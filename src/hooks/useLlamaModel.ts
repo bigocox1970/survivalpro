@@ -117,10 +117,11 @@ export function useLlamaModel(): UseLlamaModelResult {
 
       setModelStatus('Loading model into memory...');
 
+      // Use conservative settings for better compatibility
       const context = await initLlama({
         model: modelPath,
-        n_ctx: 2048,
-        n_batch: 512,
+        n_ctx: 512,      // Smaller context for memory efficiency
+        n_batch: 128,    // Smaller batch size
         n_threads: 4,
         n_gpu_layers: 0,
       });
@@ -137,7 +138,16 @@ export function useLlamaModel(): UseLlamaModelResult {
 
     } catch (error) {
       console.error('Failed to load model:', error);
-      setModelStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+
+      // Provide user-friendly error messages
+      if (errorMsg.includes('context') || errorMsg.includes('memory')) {
+        setModelStatus('Error: Not enough memory. Try closing other apps.');
+      } else if (errorMsg.includes('model') || errorMsg.includes('load')) {
+        setModelStatus('Error: Model corrupted. Go to Settings > Reset Model.');
+      } else {
+        setModelStatus(`Error: ${errorMsg}`);
+      }
     } finally {
       setIsLoading(false);
     }
