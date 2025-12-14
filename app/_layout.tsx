@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { HapticsProvider, useHaptics } from '../src/context/HapticsContext';
@@ -90,20 +90,20 @@ function TabsLayout() {
             tabBarIcon: ({ focused }) => (
               <View style={{
                 backgroundColor: focused ? colors.primary : 'transparent',
-                borderRadius: 25,
-                width: 50,
-                height: 50,
+                borderRadius: 22,
+                width: 44,
+                height: 44,
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderWidth: 2,
                 borderColor: colors.primary,
-                marginTop: 10,
+                marginTop: 14,
               }}>
-                <Ionicons
-                  name="flashlight"
-                  size={24}
-                  color={focused ? '#ffffff' : colors.primary}
-                />
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  color: focused ? '#ffffff' : colors.primary,
+                }}>SOS</Text>
               </View>
             ),
             tabBarLabel: () => null,
