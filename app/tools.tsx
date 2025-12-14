@@ -88,15 +88,20 @@ export default function ToolsScreen() {
         <TouchableOpacity
           style={[styles.flashlightButton, flashlightOn && styles.flashlightButtonOn]}
           onPress={toggleFlashlight}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
+          {flashlightOn && (
+            <View style={styles.activeIndicator}>
+              <Text style={styles.activeIndicatorText}>LIGHT ON</Text>
+            </View>
+          )}
           <Ionicons
             name={flashlightOn ? 'flashlight' : 'flashlight-outline'}
-            size={64}
-            color={flashlightOn ? '#1a1a2e' : '#e94560'}
+            size={48}
+            color={flashlightOn ? '#ffffff' : '#e94560'}
           />
           <Text style={[styles.flashlightText, flashlightOn && styles.flashlightTextOn]}>
-            {flashlightOn ? 'ON' : 'OFF'}
+            {flashlightOn ? 'TAP TO TURN OFF' : 'TAP TO TURN ON'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -306,29 +311,26 @@ const createStyles = (isDark: boolean) =>
     flashlightButton: {
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 32,
-      borderRadius: 100,
+      padding: 24,
+      borderRadius: 12,
       backgroundColor: isDark ? '#16213e' : '#ffffff',
       alignSelf: 'center',
-      width: 180,
-      height: 180,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      elevation: 5,
+      width: '100%',
+      borderWidth: 2,
+      borderColor: '#e94560',
     },
     flashlightButtonOn: {
-      backgroundColor: '#fbbf24',
+      backgroundColor: '#e94560',
+      borderColor: '#e94560',
     },
     flashlightText: {
-      fontSize: 18,
+      fontSize: 14,
       fontWeight: 'bold',
-      color: '#e94560',
+      color: isDark ? '#eaeaea' : '#1a1a2e',
       marginTop: 8,
     },
     flashlightTextOn: {
-      color: '#1a1a2e',
+      color: '#ffffff',
     },
     signalGrid: {
       flexDirection: 'row',
