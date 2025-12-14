@@ -95,14 +95,14 @@ function TabsLayout() {
                 height: 44,
                 justifyContent: 'center',
                 alignItems: 'center',
-                borderWidth: 2,
-                borderColor: colors.primary,
+                borderWidth: 1,
+                borderColor: focused ? colors.primary : colors.inactive,
                 marginTop: 14,
               }}>
                 <Text style={{
                   fontSize: 11,
                   fontWeight: 'bold',
-                  color: focused ? '#ffffff' : colors.primary,
+                  color: focused ? '#ffffff' : colors.inactive,
                 }}>SOS</Text>
               </View>
             ),
