@@ -100,7 +100,7 @@ function TabsLayout() {
                 marginTop: 14,
               }}>
                 <Text style={{
-                  fontSize: 14,
+                  fontSize: 11,
                   fontWeight: 'bold',
                   color: focused ? '#ffffff' : colors.primary,
                 }}>SOS</Text>
