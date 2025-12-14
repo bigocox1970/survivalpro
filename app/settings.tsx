@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,108 +12,76 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/context/ThemeContext';
 import { useHaptics } from '../src/context/HapticsContext';
+import { useLlamaModel } from '../src/hooks/useLlamaModel';
 
 export default function SettingsScreen() {
   const { isDark } = useTheme();
   const { hapticsEnabled, setHapticsEnabled, lightTap } = useHaptics();
+  const { isLoaded, isLoading, modelStatus, deleteModel, loadModel } = useLlamaModel();
   const styles = createStyles(isDark);
 
-  // Mock state - in production, these would come from AsyncStorage/RevenueCat
-  const [isSubscribed, setIsSubscribed] = useState(true);
-  const [modelDownloaded, setModelDownloaded] = useState(true);
-  const [autoLoadModel, setAutoLoadModel] = useState(true);
-
-  const handleSubscribe = () => {
+  const handleResetModel = () => {
     Alert.alert(
-      'Subscription',
-      'In production, this will open the RevenueCat paywall for your yearly subscription.',
-      [{ text: 'OK' }]
-    );
-  };
-
-  const handleRestorePurchases = () => {
-    Alert.alert(
-      'Restore Purchases',
-      'Checking for previous purchases...',
-      [{ text: 'OK' }]
-    );
-  };
-
-  const handleDeleteModel = () => {
-    Alert.alert(
-      'Delete AI Model',
-      'This will free up ~2GB of storage. You can re-download the model at any time.',
+      'Reset AI Model',
+      'This will delete the current model and download a fresh copy. Use this if the AI is not working correctly.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Reset',
           style: 'destructive',
-          onPress: () => setModelDownloaded(false),
-        },
-      ]
-    );
-  };
-
-  const handleDownloadModel = () => {
-    Alert.alert(
-      'Download AI Model',
-      'This will download the Llama 3.2 3B model (~2GB). Make sure you have a stable internet connection.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Download',
-          onPress: () => {
-            // In production, trigger the model download
-            setModelDownloaded(true);
+          onPress: async () => {
+            await deleteModel();
+            // Trigger re-download
+            loadModel();
           },
         },
       ]
     );
   };
 
+  const handleDeleteModel = () => {
+    Alert.alert(
+      'Delete AI Model',
+      'This will free up ~750MB of storage. You can re-download the model from the AI Assistant tab.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: deleteModel,
+        },
+      ]
+    );
+  };
+
+  const getModelStatusColor = () => {
+    if (isLoaded) return '#4ade80';
+    if (isLoading) return '#f59e0b';
+    return '#ef4444';
+  };
+
   const settingSections = [
-    {
-      title: 'Subscription',
-      items: [
-        {
-          icon: 'star',
-          label: 'Subscription Status',
-          value: isSubscribed ? 'Active' : 'Inactive',
-          valueColor: isSubscribed ? '#4ade80' : '#ef4444',
-        },
-        {
-          icon: 'card',
-          label: isSubscribed ? 'Manage Subscription' : 'Subscribe Now',
-          action: handleSubscribe,
-        },
-        {
-          icon: 'refresh',
-          label: 'Restore Purchases',
-          action: handleRestorePurchases,
-        },
-      ],
-    },
     {
       title: 'AI Model',
       items: [
         {
           icon: 'hardware-chip',
           label: 'Model Status',
-          value: modelDownloaded ? 'Downloaded (2.1 GB)' : 'Not Downloaded',
-          valueColor: modelDownloaded ? '#4ade80' : '#f59e0b',
+          value: modelStatus,
+          valueColor: getModelStatusColor(),
         },
         {
-          icon: modelDownloaded ? 'trash' : 'cloud-download',
-          label: modelDownloaded ? 'Delete Model' : 'Download Model',
-          action: modelDownloaded ? handleDeleteModel : handleDownloadModel,
-          destructive: modelDownloaded,
+          icon: 'refresh-circle',
+          label: 'Reset Model (Re-download)',
+          subtitle: 'Use if AI is not working',
+          action: handleResetModel,
         },
         {
-          icon: 'play-circle',
-          label: 'Auto-load on startup',
-          toggle: true,
-          value: autoLoadModel,
-          onToggle: setAutoLoadModel,
+          icon: 'trash',
+          label: 'Delete Model',
+          subtitle: 'Free up ~750MB storage',
+          action: handleDeleteModel,
+          destructive: true,
         },
       ],
     },
@@ -229,7 +197,7 @@ export default function SettingsScreen() {
       <View style={styles.storageInfo}>
         <Ionicons name="folder" size={16} color={isDark ? '#8a8aaa' : '#666'} />
         <Text style={styles.storageText}>
-          App Storage: {modelDownloaded ? '2.3 GB' : '150 MB'}
+          AI Model: Llama 3.2 1B (~750MB)
         </Text>
       </View>
 

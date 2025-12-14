@@ -8,6 +8,7 @@ const MODEL_CONFIG = {
   filename: 'llama-3.2-1b-instruct-q4_k_m.gguf',
   downloadUrl: 'https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf',
   size: '0.75 GB',
+  expectedSizeBytes: 750000000, // Approximate minimum size in bytes
 };
 
 // System prompt for survival assistant
@@ -33,6 +34,7 @@ interface UseLlamaModelResult {
   loadModel: () => Promise<void>;
   unloadModel: () => Promise<void>;
   generateResponse: (prompt: string) => Promise<string>;
+  deleteModel: () => Promise<void>;
 }
 
 export function useLlamaModel(): UseLlamaModelResult {
@@ -52,7 +54,16 @@ export function useLlamaModel(): UseLlamaModelResult {
     try {
       const modelPath = getModelPath();
       const fileInfo = await FileSystem.getInfoAsync(modelPath);
-      return fileInfo.exists;
+      if (!fileInfo.exists) return false;
+
+      // Check if file size is reasonable (at least 500MB for the 1B model)
+      if (fileInfo.size && fileInfo.size < MODEL_CONFIG.expectedSizeBytes) {
+        console.log(`Model file too small: ${fileInfo.size} bytes. Deleting and re-downloading...`);
+        await FileSystem.deleteAsync(modelPath, { idempotent: true });
+        return false;
+      }
+
+      return true;
     } catch {
       return false;
     }
@@ -108,11 +119,15 @@ export function useLlamaModel(): UseLlamaModelResult {
 
       const context = await initLlama({
         model: modelPath,
-        n_ctx: 1024,
-        n_batch: 256,
-        n_threads: 6,
+        n_ctx: 2048,
+        n_batch: 512,
+        n_threads: 4,
         n_gpu_layers: 0,
       });
+
+      if (!context) {
+        throw new Error('Failed to create model context');
+      }
 
       contextRef.current = context;
 
@@ -136,6 +151,25 @@ export function useLlamaModel(): UseLlamaModelResult {
     setIsLoaded(false);
     setModelStatus('Model unloaded');
     setDownloadProgress(0);
+  }, []);
+
+  const deleteModel = useCallback(async () => {
+    // First unload if loaded
+    if (contextRef.current) {
+      await contextRef.current.release();
+      contextRef.current = null;
+    }
+
+    // Delete the model file
+    const modelPath = getModelPath();
+    try {
+      await FileSystem.deleteAsync(modelPath, { idempotent: true });
+      setIsLoaded(false);
+      setModelStatus('Model deleted. Tap to re-download.');
+      setDownloadProgress(0);
+    } catch (error) {
+      console.error('Failed to delete model:', error);
+    }
   }, []);
 
   const generateResponse = useCallback(async (prompt: string): Promise<string> => {
@@ -164,6 +198,12 @@ ${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
     } catch (error) {
       console.error('Generation error:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+
+      if (errorMsg.toLowerCase().includes('context') || errorMsg.toLowerCase().includes('limit')) {
+        return 'Context limit reached. Please restart the app to reset the conversation.';
+      }
+
       return 'I encountered an error generating a response. Please try again.';
     } finally {
       setIsGenerating(false);
@@ -179,5 +219,6 @@ ${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
     loadModel,
     unloadModel,
     generateResponse,
+    deleteModel,
   };
 }
