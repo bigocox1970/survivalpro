@@ -96,7 +96,7 @@ function TabsLayout() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderWidth: 1,
-                borderColor: focused ? colors.primary : colors.inactive,
+                borderColor: colors.primary,
                 marginTop: 14,
               }}>
                 <Text style={{
