@@ -90,17 +90,18 @@ function TabsLayout() {
             tabBarIcon: ({ focused }) => (
               <View style={{
                 backgroundColor: focused ? colors.primary : 'transparent',
-                borderRadius: 18,
-                width: 36,
-                height: 36,
+                borderRadius: 25,
+                width: 50,
+                height: 50,
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderWidth: 2,
                 borderColor: colors.primary,
+                marginTop: 10,
               }}>
                 <Ionicons
                   name="flashlight"
-                  size={20}
+                  size={24}
                   color={focused ? '#ffffff' : colors.primary}
                 />
               </View>
