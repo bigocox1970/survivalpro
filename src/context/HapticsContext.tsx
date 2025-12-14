@@ -44,39 +44,63 @@ export function HapticsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const lightTap = () => {
+  const lightTap = async () => {
     if (hapticsEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (e) {
+        console.log('Haptics error:', e);
+      }
     }
   };
 
-  const mediumTap = () => {
+  const mediumTap = async () => {
     if (hapticsEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (e) {
+        console.log('Haptics error:', e);
+      }
     }
   };
 
-  const heavyTap = () => {
+  const heavyTap = async () => {
     if (hapticsEnabled) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      } catch (e) {
+        console.log('Haptics error:', e);
+      }
     }
   };
 
-  const success = () => {
+  const success = async () => {
     if (hapticsEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      try {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch (e) {
+        console.log('Haptics error:', e);
+      }
     }
   };
 
-  const warning = () => {
+  const warning = async () => {
     if (hapticsEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      try {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      } catch (e) {
+        console.log('Haptics error:', e);
+      }
     }
   };
 
-  const error = () => {
+  const error = async () => {
     if (hapticsEnabled) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      try {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } catch (e) {
+        console.log('Haptics error:', e);
+      }
     }
   };
 
