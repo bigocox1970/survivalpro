@@ -400,8 +400,6 @@ export default function PrepareScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Ionicons name="shield-checkmark" size={32} color="#e94560" />
-        <Text style={styles.headerTitle}>Prepare</Text>
         <Text style={styles.headerSubtitle}>
           Essential survival gear recommendations
         </Text>
@@ -497,19 +495,12 @@ const createStyles = (isDark: boolean) =>
     },
     header: {
       alignItems: 'center',
-      paddingVertical: 24,
+      paddingVertical: 12,
       paddingHorizontal: 16,
-    },
-    headerTitle: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: isDark ? '#eaeaea' : '#1a1a2e',
-      marginTop: 8,
     },
     headerSubtitle: {
       fontSize: 14,
       color: isDark ? '#8a8aaa' : '#666',
-      marginTop: 4,
     },
     categoryContainer: {
       marginHorizontal: 16,

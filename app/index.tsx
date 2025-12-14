@@ -33,8 +33,6 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Ionicons name="shield-checkmark" size={32} color="#e94560" />
-        <Text style={styles.headerTitle}>Survival Guide</Text>
         <Text style={styles.headerSubtitle}>
           100% Offline • No Internet Required
         </Text>
@@ -139,19 +137,12 @@ const createStyles = (isDark: boolean) =>
     },
     header: {
       alignItems: 'center',
-      paddingVertical: 24,
+      paddingVertical: 12,
       paddingHorizontal: 16,
-    },
-    headerTitle: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: isDark ? '#eaeaea' : '#1a1a2e',
-      marginTop: 8,
     },
     headerSubtitle: {
       fontSize: 14,
       color: '#4ade80',
-      marginTop: 4,
     },
     categoryContainer: {
       marginHorizontal: 16,
