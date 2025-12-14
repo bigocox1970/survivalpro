@@ -8,6 +8,7 @@ import {
   Linking,
   NativeModules,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../src/context/ThemeContext';
@@ -406,13 +407,6 @@ export default function PrepareScreen() {
         </Text>
       </View>
 
-      <View style={styles.disclaimer}>
-        <Ionicons name="information-circle-outline" size={18} color={isDark ? '#8a8aaa' : '#666'} />
-        <Text style={styles.disclaimerText}>
-          Links open Amazon. We may earn a commission on purchases.
-        </Text>
-      </View>
-
       {gearCategories.map((category) => (
         <View key={category.id} style={styles.categoryContainer}>
           <TouchableOpacity
@@ -474,6 +468,19 @@ export default function PrepareScreen() {
         <Text style={styles.footerText}>
           Being prepared could save your life.
         </Text>
+        <TouchableOpacity
+          style={styles.infoButton}
+          onPress={() => {
+            lightTap();
+            Alert.alert(
+              'Affiliate Disclosure',
+              'Links open Amazon. We may earn a commission on purchases. However, this is at no extra cost to you.',
+              [{ text: 'OK' }]
+            );
+          }}
+        >
+          <Ionicons name="information-circle-outline" size={20} color={isDark ? '#6a6a8a' : '#999'} />
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -503,22 +510,6 @@ const createStyles = (isDark: boolean) =>
       fontSize: 14,
       color: isDark ? '#8a8aaa' : '#666',
       marginTop: 4,
-    },
-    disclaimer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      marginHorizontal: 16,
-      marginBottom: 8,
-      backgroundColor: isDark ? '#16213e' : '#ffffff',
-      borderRadius: 8,
-    },
-    disclaimerText: {
-      fontSize: 12,
-      color: isDark ? '#8a8aaa' : '#666',
-      marginLeft: 6,
     },
     categoryContainer: {
       marginHorizontal: 16,
@@ -608,9 +599,15 @@ const createStyles = (isDark: boolean) =>
     footer: {
       padding: 24,
       alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
     },
     footerText: {
       fontSize: 12,
       color: isDark ? '#6a6a8a' : '#999',
+    },
+    infoButton: {
+      marginLeft: 8,
+      padding: 4,
     },
   });
